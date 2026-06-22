@@ -1,0 +1,981 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PTUK TalentBridge — AI-Powered Graduate Recruitment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --royal: #1B3A6B;
+      --royal-light: #2A5298;
+      --royal-dark: #0F2347;
+      --slate: #4A5568;
+      --slate-light: #718096;
+      --ivory: #F7F8FC;
+      --accent: #C8A95B;
+      --success: #2F855A;
+      --border: #E2E8F0;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--ivory); color: var(--slate); }
+    .font-display { font-family: 'Playfair Display', serif; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .nav-bar { background: var(--royal-dark); border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+
+    .hero-bg {
+      background: linear-gradient(135deg, var(--royal-dark) 0%, var(--royal) 55%, #2A5298 100%);
+      position: relative; overflow: hidden;
+    }
+    .hero-bg::after {
+      content:''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .form-field {
+      background: #fff; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; width: 100%; font-size: 14px; color: var(--royal-dark);
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    .form-field:focus { border-color: var(--royal-light); box-shadow: 0 0 0 3px rgba(42,82,152,.12); }
+    .form-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--slate); display: block; margin-bottom: 6px; }
+
+    .btn-primary { background: linear-gradient(135deg, var(--royal-light), var(--royal-dark)); color: #fff; font-weight: 600; padding: 12px 28px; border-radius: 8px; border: none; cursor: pointer; transition: opacity .2s, transform .15s; font-size: 14px; }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-accent { background: linear-gradient(135deg, var(--accent), #B8923A); color: var(--royal-dark); font-weight: 700; padding: 14px 36px; border-radius: 8px; border: none; cursor: pointer; transition: opacity .2s, transform .15s; font-size: 15px; }
+    .btn-accent:hover { opacity: .92; transform: translateY(-1px); }
+    .btn-accent:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--royal-light); color: var(--royal-light); font-weight: 600; padding: 8px 20px; border-radius: 7px; cursor: pointer; font-size: 13px; transition: all .2s; }
+    .btn-outline:hover { background: var(--royal-light); color: #fff; }
+    .btn-ghost { background: transparent; border: none; cursor: pointer; color: var(--slate-light); font-size: 13px; padding: 6px 12px; border-radius: 5px; transition: color .15s, background .15s; }
+    .btn-ghost:hover { background: #fee; color: #c53030; }
+
+    .match-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 24px; transition: box-shadow .25s, transform .25s; position: relative; overflow: hidden; }
+    .match-card:hover { box-shadow: 0 8px 32px rgba(27,58,107,.12); transform: translateY(-3px); }
+    .match-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+    .match-card.rank-1::before { background: #C8A95B; }
+    .match-card.rank-2::before { background: #A0AEC0; }
+    .match-card.rank-3::before { background: #C05621; }
+    .match-card.rank-other::before { background: var(--royal-light); }
+
+    .score-ring { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; border: 3px solid; flex-shrink: 0; }
+    .score-high { border-color: #2F855A; color: #2F855A; background: #F0FFF4; }
+    .score-mid  { border-color: var(--royal-light); color: var(--royal-light); background: #EBF4FF; }
+    .score-low  { border-color: #C05621; color: #C05621; background: #FFF5EB; }
+
+    .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; }
+    .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .data-table th { background: var(--royal-dark); color: #CBD5E0; font-weight: 600; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 12px 16px; text-align: left; }
+    .data-table th:first-child { border-radius: 8px 0 0 0; }
+    .data-table th:last-child  { border-radius: 0 8px 0 0; }
+    .data-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--slate); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #F7F8FC; }
+
+    .sidebar { background: var(--royal-dark); min-height: 100vh; width: 240px; flex-shrink: 0; position: relative; }
+    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 11px 20px; color: #A0AEC0; font-size: 14px; border-radius: 7px; margin: 2px 10px; cursor: pointer; transition: background .15s, color .15s; border: none; background: transparent; width: calc(100% - 20px); text-align: left; }
+    .sidebar-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .sidebar-link.active { background: rgba(200,169,91,.15); color: var(--accent); }
+
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes scaleIn  { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+    .animate-fade-up  { animation: fadeInUp .45s ease both; }
+    .animate-scale-in { animation: scaleIn .35s ease both; }
+    .stagger > * { animation: fadeInUp .4s ease both; }
+    .stagger > *:nth-child(1)  { animation-delay:.05s; }
+    .stagger > *:nth-child(2)  { animation-delay:.10s; }
+    .stagger > *:nth-child(3)  { animation-delay:.15s; }
+    .stagger > *:nth-child(4)  { animation-delay:.20s; }
+    .stagger > *:nth-child(5)  { animation-delay:.25s; }
+    .stagger > *:nth-child(6)  { animation-delay:.30s; }
+    .stagger > *:nth-child(7)  { animation-delay:.35s; }
+    .stagger > *:nth-child(8)  { animation-delay:.40s; }
+    .stagger > *:nth-child(9)  { animation-delay:.45s; }
+    .stagger > *:nth-child(10) { animation-delay:.50s; }
+
+    .loading-bar { height: 3px; background: linear-gradient(90deg, var(--royal-light), var(--accent), var(--royal-light)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: 2px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; letter-spacing: .02em; }
+    .badge-green { background: #F0FFF4; color: #276749; border: 1px solid #9AE6B4; }
+    .badge-blue  { background: #EBF4FF; color: #2B4C8C; border: 1px solid #BEE3F8; }
+    .badge-gold  { background: #FFFBEB; color: #92400E; border: 1px solid #FCD34D; }
+    .badge-gray  { background: #F7F8FC; color: var(--slate); border: 1px solid var(--border); }
+
+    .upload-zone { border: 2px dashed #CBD5E0; border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+    .upload-zone:hover { border-color: var(--royal-light); background: #EBF4FF; }
+
+    .form-field.error { border-color: #C53030; box-shadow: 0 0 0 3px rgba(197,48,48,.12); }
+    .field-error { font-size: 11.5px; color: #C53030; margin-top: 4px; display: none; }
+    .field-error.show { display: block; }
+
+    /* Arabic text in results */
+    .arabic-reason { direction: rtl; text-align: right; font-size: 13px; line-height: 1.8; color: var(--royal-dark); font-weight: 500; }
+
+    #toast { position: fixed; bottom: 28px; right: 28px; background: var(--royal-dark); color: #fff; padding: 14px 22px; border-radius: 10px; font-size: 14px; font-weight: 500; border-left: 4px solid var(--accent); box-shadow: 0 8px 30px rgba(0,0,0,.25); transform: translateY(20px); opacity: 0; transition: all .3s; pointer-events: none; z-index: 9999; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    .section-divider { display: flex; align-items: center; gap: 16px; margin: 48px 0 40px; }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .section-divider span { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--slate-light); }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--ivory); }
+    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 3px; }
+
+    @media (max-width: 768px) { .sidebar { display: none; } .admin-layout { flex-direction: column !important; } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ PUBLIC VIEW ══════════════════════ -->
+<div id="view-public" class="view active">
+
+  <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#C8A95B"/><path d="M18 6L8 11V20C8 25.5 12.5 30.5 18 32C23.5 30.5 28 25.5 28 20V11L18 6Z" fill="#0F2347" stroke="#C8A95B" stroke-width="1"/><path d="M13 18L16.5 21.5L23 15" stroke="#C8A95B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <div class="text-white font-bold text-base leading-tight">PTUK TalentBridge</div>
+          <div class="text-xs" style="color:var(--accent)">Palestine Technical University – Kadoorie</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="#recruiter-form" class="text-sm text-gray-300 hover:text-white transition-colors hidden md:block">For Recruiters</a>
+        <a href="#results-section" class="text-sm text-gray-300 hover:text-white transition-colors hidden md:block">Candidates</a>
+        <button onclick="showView('view-login')" class="btn-outline text-sm">Admin Login</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero-bg relative py-20 px-6">
+    <div class="max-w-4xl mx-auto text-center relative z-10 animate-fade-up">
+      <div class="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full text-xs font-semibold tracking-widest uppercase" style="background:rgba(200,169,91,.15);color:var(--accent);border:1px solid rgba(200,169,91,.3)">
+        <span style="width:6px;height:6px;background:var(--accent);border-radius:50%;display:inline-block"></span>
+        Gemini 2.5 Flash · AI-Powered Matching · Live
+      </div>
+      <h1 class="font-display text-white text-5xl md:text-6xl leading-tight mb-5">
+        Find the Right Graduate,<br/><span style="color:var(--accent)">Precisely.</span>
+      </h1>
+      <p class="text-gray-300 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+        PTUK TalentBridge uses Google Gemini AI to rank verified PTUK graduates against your exact role requirements — returning matched candidates with Arabic justifications in seconds.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="#recruiter-form"><button class="btn-accent">Post a Role — Get Matches</button></a>
+        <button onclick="showView('view-login')" class="btn-outline" style="color:#a0aec0;border-color:#4a5568">Admin Portal →</button>
+      </div>
+      <div class="mt-12 flex flex-wrap justify-center gap-8 text-gray-400 text-xs font-medium tracking-wide">
+        <span>🎓 PTUK Verified Graduates</span>
+        <span>🔒 Anonymous by Default</span>
+        <span>⚡ Gemini 2.5 Flash Engine</span>
+        <span>🌐 Arabic AI Justifications</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECRUITER FORM -->
+  <section id="recruiter-form" class="max-w-3xl mx-auto px-6 py-16">
+    <div class="text-center mb-10">
+      <span class="badge badge-blue mb-3">For Employers &amp; Recruiters</span>
+      <h2 class="font-display text-3xl font-bold mb-2" style="color:var(--royal-dark)">Describe Your Opening</h2>
+      <p class="text-sm" style="color:var(--slate-light)">The more detail you provide, the more precise your candidate matches will be.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border p-8 md:p-10" style="border-color:var(--border)">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="form-label">Job Title <span style="color:#C53030">*</span></label>
+          <input id="job-title" type="text" class="form-field" placeholder="e.g. Junior Software Engineer">
+          <div class="field-error" id="err-title">Please enter a job title.</div>
+        </div>
+        <div>
+          <label class="form-label">Field / Specialization <span style="color:#C53030">*</span></label>
+          <select id="job-field" class="form-field" style="cursor:pointer">
+            <option value="">Select a field…</option>
+            <option>Computer Science &amp; Engineering</option>
+            <option>Electrical &amp; Electronic Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Industrial Engineering</option>
+            <option>Accounting &amp; Finance</option>
+            <option>Business Administration</option>
+            <option>Agriculture &amp; Food Science</option>
+            <option>Architecture</option>
+            <option>Other</option>
+          </select>
+          <div class="field-error" id="err-field">Please select a specialization.</div>
+        </div>
+        <div>
+          <label class="form-label">Employment Type</label>
+          <div class="flex flex-wrap gap-2 mt-1" id="emp-type-group">
+            <span class="badge badge-blue" style="cursor:pointer" data-type="Full-time" onclick="selectEmpType(this)">Full-time</span>
+            <span class="badge badge-gray" style="cursor:pointer" data-type="Part-time" onclick="selectEmpType(this)">Part-time</span>
+            <span class="badge badge-gray" style="cursor:pointer" data-type="Internship" onclick="selectEmpType(this)">Internship</span>
+            <span class="badge badge-gray" style="cursor:pointer" data-type="Contract" onclick="selectEmpType(this)">Contract</span>
+            <span class="badge badge-gray" style="cursor:pointer" data-type="Remote" onclick="selectEmpType(this)">Remote</span>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Required Skills <span style="color:#C53030">*</span></label>
+          <input id="job-skills" type="text" class="form-field" placeholder="e.g. Python, React, SQL, Git…">
+          <div class="field-error" id="err-skills">Please enter at least one skill.</div>
+          <p class="text-xs mt-1" style="color:var(--slate-light)">Separate with commas</p>
+        </div>
+        <div class="md:col-span-2">
+          <label class="form-label">Detailed Job Description <span style="color:#C53030">*</span></label>
+          <textarea id="job-desc" class="form-field" rows="6" style="resize:vertical;min-height:120px"
+            placeholder="Describe responsibilities, qualifications, preferred experience, soft skills, and any other requirements…"></textarea>
+          <div class="field-error" id="err-desc">Please provide a description (at least 50 characters).</div>
+        </div>
+      </div>
+
+      <!-- API error banner -->
+      <div id="match-api-error" class="hidden mt-5 text-sm rounded-lg py-3 px-4" style="background:#FFF5F5;color:#C53030;border:1px solid #FEB2B2"></div>
+
+      <div id="match-loading" class="mt-6 hidden">
+        <div class="loading-bar"></div>
+        <p class="text-center text-sm mt-3 font-medium" style="color:var(--slate-light)">
+          Gemini 2.5 Flash is analyzing <span id="cv-count">—</span> graduate profiles…
+        </p>
+      </div>
+
+      <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
+        <button id="match-btn" onclick="runMatching()" class="btn-accent w-full sm:w-auto">
+          ⚡ Find Matching Candidates
+        </button>
+        <p class="text-xs" style="color:var(--slate-light)">Results ranked by Gemini AI · Justifications in Arabic</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI RESULTS -->
+  <section id="results-section" class="hidden max-w-6xl mx-auto px-6 pb-20">
+    <div class="section-divider"><span>Gemini AI Match Results</span></div>
+    <div class="text-center mb-10 animate-fade-up">
+      <span class="badge badge-green mb-3">✓ Matching Complete</span>
+      <h2 class="font-display text-3xl font-bold mb-2" style="color:var(--royal-dark)">Top Matched Candidates</h2>
+      <p class="text-sm" style="color:var(--slate-light)">Ranked by Gemini 2.5 Flash for: <strong id="results-job-title" style="color:var(--royal)">—</strong></p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div class="stat-card text-center"><div class="text-2xl font-bold mb-0.5" style="color:var(--royal)"><span id="stat-pool">—</span></div><div class="text-xs" style="color:var(--slate-light)">CVs Analyzed</div></div>
+      <div class="stat-card text-center"><div class="text-2xl font-bold mb-0.5" style="color:var(--success)" id="stat-count">—</div><div class="text-xs" style="color:var(--slate-light)">Top Matches</div></div>
+      <div class="stat-card text-center"><div class="text-2xl font-bold mb-0.5" style="color:var(--royal)"><span id="stat-avg">—</span>%</div><div class="text-xs" style="color:var(--slate-light)">Average Score</div></div>
+      <div class="stat-card text-center"><div class="text-2xl font-bold mb-0.5" style="color:var(--accent)">AI</div><div class="text-xs" style="color:var(--slate-light)">Ranked by Gemini</div></div>
+    </div>
+    <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5 stagger"></div>
+  </section>
+
+</div><!-- /view-public -->
+
+
+<!-- ══════════════════════ LOGIN VIEW ══════════════════════ -->
+<div id="view-login" class="view">
+  <div class="min-h-screen flex" style="background:linear-gradient(135deg,var(--royal-dark) 0%,#1e3a5f 100%)">
+    <div class="hidden lg:flex flex-col justify-center px-16 flex-1" style="max-width:480px">
+      <div class="flex items-center gap-3 mb-12">
+        <svg width="40" height="40" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#C8A95B"/><path d="M18 6L8 11V20C8 25.5 12.5 30.5 18 32C23.5 30.5 28 25.5 28 20V11L18 6Z" fill="#0F2347" stroke="#C8A95B" stroke-width="1"/><path d="M13 18L16.5 21.5L23 15" stroke="#C8A95B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="text-white font-bold text-lg">PTUK TalentBridge</div>
+      </div>
+      <h2 class="font-display text-white text-4xl font-bold leading-snug mb-4">Empower Your<br/>Placement Office</h2>
+      <p class="text-gray-300 text-sm leading-relaxed">Manage the graduate CV pool, monitor AI matching activity, and support employers — from one secure dashboard.</p>
+      <ul class="mt-8 space-y-3 text-gray-300 text-sm">
+        <li class="flex items-center gap-3"><span style="color:var(--accent)">✓</span> Upload &amp; manage student CVs securely</li>
+        <li class="flex items-center gap-3"><span style="color:var(--accent)">✓</span> Session-protected with Flask secure cookies</li>
+        <li class="flex items-center gap-3"><span style="color:var(--accent)">✓</span> Monitor real-time matching analytics</li>
+      </ul>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center px-6 py-16">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-10 animate-scale-in">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full mb-4" style="background:var(--royal-dark)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-bold" style="color:var(--royal-dark)">Admin Portal</h3>
+          <p class="text-sm mt-1" style="color:var(--slate-light)">Palestine Technical University – Kadoorie</p>
+        </div>
+        <div class="space-y-5">
+          <div>
+            <label class="form-label">Email Address</label>
+            <input id="login-email" type="email" class="form-field" placeholder="admin@ptuk.edu.ps" onkeydown="if(event.key==='Enter')doLogin()">
+            <div class="field-error" id="err-login-email">Please enter a valid email.</div>
+          </div>
+          <div>
+            <label class="form-label">Password</label>
+            <div class="relative">
+              <input id="login-password" type="password" class="form-field pr-10" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+              <button type="button" onclick="togglePw()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="field-error" id="err-login-password">Please enter your password.</div>
+          </div>
+          <div id="login-error" class="hidden text-sm text-center font-medium rounded-lg py-3 px-4" style="background:#FFF5F5;color:#C53030;border:1px solid #FEB2B2"></div>
+          <button id="login-btn" onclick="doLogin()" class="btn-primary w-full mt-2" style="padding:13px">Sign In to Dashboard</button>
+          <p class="text-center text-xs" style="color:var(--slate-light)">Credentials are verified against the secured SQLite database.</p>
+        </div>
+        <div class="mt-6 text-center">
+          <button onclick="showView('view-public')" class="text-xs" style="color:var(--slate-light)">← Back to public portal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════ ADMIN VIEW ══════════════════════ -->
+<div id="view-admin" class="view">
+  <div class="flex admin-layout" style="min-height:100vh">
+    <aside class="sidebar py-6">
+      <div class="flex items-center gap-2 px-5 pb-6 border-b" style="border-color:rgba(255,255,255,.08)">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="8" fill="#C8A95B"/><path d="M18 6L8 11V20C8 25.5 12.5 30.5 18 32C23.5 30.5 28 25.5 28 20V11L18 6Z" fill="#0F2347" stroke="#C8A95B" stroke-width="1"/><path d="M13 18L16.5 21.5L23 15" stroke="#C8A95B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><div class="text-white font-bold text-sm">TalentBridge</div><div class="text-xs" style="color:#718096">Admin Console</div></div>
+      </div>
+      <nav class="mt-5 px-2">
+        <p class="px-4 text-xs font-semibold tracking-widest uppercase mb-3" style="color:#4a5568">Navigation</p>
+        <button class="sidebar-link active" onclick="showAdminTab('tab-overview')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Overview
+        </button>
+        <button class="sidebar-link" onclick="showAdminTab('tab-upload')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload CV
+        </button>
+        <button class="sidebar-link" onclick="showAdminTab('tab-cvs')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>CV Pool
+        </button>
+      </nav>
+      <div style="position:absolute;bottom:24px;left:0;right:0;padding:0 16px">
+        <button onclick="doLogout()" class="sidebar-link w-full" style="color:#FC8181">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto" style="background:var(--ivory)">
+      <div class="bg-white border-b px-8 py-4 flex items-center justify-between" style="border-color:var(--border)">
+        <div>
+          <h1 class="font-semibold text-base" style="color:var(--royal-dark)">Admin Dashboard</h1>
+          <p class="text-xs" style="color:var(--slate-light)">Career Development &amp; Placement Office · PTUK</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:var(--royal)">A</div>
+          <div class="hidden sm:block">
+            <div class="text-sm font-semibold" style="color:var(--royal-dark)">Administrator</div>
+            <div class="text-xs" style="color:var(--slate-light)" id="admin-email-display">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: OVERVIEW -->
+      <div id="tab-overview" class="admin-tab p-8">
+        <div class="mb-6">
+          <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--royal-dark)">Platform Overview</h2>
+          <p class="text-sm" style="color:var(--slate-light)">Live statistics pulled from the SQLite database</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 stagger">
+          <div class="stat-card">
+            <div class="stat-icon mb-3" style="background:#EBF4FF">📄</div>
+            <div class="text-3xl font-bold mb-0.5" style="color:var(--royal)"><span id="dash-total-cvs">…</span></div>
+            <div class="text-sm font-medium" style="color:var(--slate)">Total Resumes</div>
+            <div class="text-xs mt-1" style="color:var(--slate-light)">In the active CV pool</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon mb-3" style="background:#F0FFF4">⚡</div>
+            <div class="text-3xl font-bold mb-0.5" style="color:var(--success)" id="dash-matches">0</div>
+            <div class="text-sm font-medium" style="color:var(--slate)">Matches Performed</div>
+            <div class="text-xs mt-1" style="color:var(--slate-light)">This session</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon mb-3" style="background:#FFFBEB">🎓</div>
+            <div class="text-3xl font-bold mb-0.5" style="color:#92400E" id="dash-fields">…</div>
+            <div class="text-sm font-medium" style="color:var(--slate)">Fields Covered</div>
+            <div class="text-xs mt-1" style="color:var(--slate-light)">Unique specializations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon mb-3" style="background:#F0FFF4">🏢</div>
+            <div class="text-3xl font-bold mb-0.5" style="color:var(--success)" id="dash-recruiters">0</div>
+            <div class="text-sm font-medium" style="color:var(--slate)">Recruiter Queries</div>
+            <div class="text-xs mt-1" style="color:var(--slate-light)">All time</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border p-6" style="border-color:var(--border)">
+          <h3 class="font-semibold mb-4" style="color:var(--royal-dark)">Recently Uploaded CVs</h3>
+          <div id="recent-uploads-list"><p class="text-sm text-center py-8" style="color:var(--slate-light)">Loading…</p></div>
+        </div>
+      </div>
+
+      <!-- TAB: UPLOAD CV -->
+      <div id="tab-upload" class="admin-tab hidden p-8">
+        <div class="mb-6">
+          <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--royal-dark)">Add CV to Pool</h2>
+          <p class="text-sm" style="color:var(--slate-light)">The system will auto-generate a secure anonymous ID for this graduate.</p>
+        </div>
+        <div class="max-w-2xl">
+          <div class="bg-white rounded-xl border p-8" style="border-color:var(--border)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label class="form-label">Student Full Name <span style="color:#C53030">*</span></label>
+                <input id="cv-name" type="text" class="form-field" placeholder="Full name (admin-only, not shown to recruiters)">
+                <div class="field-error" id="err-cv-name">Required.</div>
+              </div>
+              <div>
+                <label class="form-label">Student ID</label>
+                <input id="cv-sid" type="text" class="form-field" placeholder="e.g. 2021001234">
+              </div>
+              <div>
+                <label class="form-label">Graduation Year</label>
+                <select id="cv-year" class="form-field" style="cursor:pointer">
+                  <option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Specialization <span style="color:#C53030">*</span></label>
+                <select id="cv-field" class="form-field" style="cursor:pointer">
+                  <option value="">Select…</option>
+                  <option>Computer Science &amp; Engineering</option>
+                  <option>Electrical &amp; Electronic Engineering</option>
+                  <option>Mechanical Engineering</option>
+                  <option>Industrial Engineering</option>
+                  <option>Accounting &amp; Finance</option>
+                  <option>Business Administration</option>
+                  <option>Agriculture &amp; Food Science</option>
+                  <option>Architecture</option>
+                  <option>Other</option>
+                </select>
+                <div class="field-error" id="err-cv-field">Required.</div>
+              </div>
+            </div>
+            <div class="mb-5">
+              <label class="form-label">Upload CV File (optional — text will be extracted)</label>
+              <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                <div class="text-3xl mb-2">📎</div>
+                <p class="text-sm font-medium" style="color:var(--slate)">Click to select a PDF, DOCX, or TXT</p>
+                <p class="text-xs mt-1" style="color:var(--slate-light)">Max 5MB · Content pastes into the text area below</p>
+                <input id="file-input" type="file" class="hidden" accept=".txt" onchange="handleFileRead(this)">
+              </div>
+              <div id="file-name-display" class="hidden mt-2 text-xs font-medium" style="color:var(--success)"></div>
+            </div>
+            <div class="mb-6">
+              <label class="form-label">CV Full Text <span style="color:#C53030">*</span></label>
+              <textarea id="cv-text" class="form-field" rows="9" style="resize:vertical;min-height:140px;font-size:13px"
+                placeholder="Paste or type the full content of the CV — education, experience, skills, projects, GPA, achievements…"></textarea>
+              <div class="field-error" id="err-cv-text">Please provide CV text (at least 100 characters).</div>
+            </div>
+            <div id="upload-api-error" class="hidden mb-4 text-sm rounded-lg py-3 px-4" style="background:#FFF5F5;color:#C53030;border:1px solid #FEB2B2"></div>
+            <button id="upload-btn" onclick="addCV()" class="btn-primary w-full" style="padding:13px">
+              ＋ Add CV to Graduate Pool
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CV POOL -->
+      <div id="tab-cvs" class="admin-tab hidden p-8">
+        <div class="mb-6 flex items-center justify-between">
+          <div>
+            <h2 class="font-display text-2xl font-bold mb-1" style="color:var(--royal-dark)">CV Pool</h2>
+            <p class="text-sm" style="color:var(--slate-light)">All graduate profiles available for Gemini AI matching — <span id="cv-pool-count">…</span> total</p>
+          </div>
+          <button onclick="showAdminTab('tab-upload')" class="btn-primary" style="padding:9px 20px;font-size:13px">+ Upload New CV</button>
+        </div>
+        <div class="bg-white rounded-xl border overflow-hidden" style="border-color:var(--border)">
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Anonymous ID</th><th>Specialization</th>
+                  <th>Grad. Year</th><th>Uploaded (UTC)</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cv-table-body">
+                <tr><td colspan="6" class="text-center py-10 text-sm" style="color:var(--slate-light)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- CV View Modal -->
+<div id="cv-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,.55);backdrop-filter:blur(3px)">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-auto animate-scale-in">
+    <div class="flex items-center justify-between p-6 border-b" style="border-color:var(--border)">
+      <div>
+        <h3 id="modal-anon-id" class="font-semibold text-base" style="color:var(--royal-dark)">—</h3>
+        <p id="modal-meta" class="text-xs mt-0.5" style="color:var(--slate-light)">—</p>
+      </div>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100">✕</button>
+    </div>
+    <div class="p-6">
+      <label class="form-label mb-3">CV Content (stored in SQLite)</label>
+      <pre id="modal-text" class="text-sm leading-relaxed whitespace-pre-wrap font-mono p-4 rounded-lg" style="background:var(--ivory);color:var(--slate);border:1px solid var(--border);max-height:380px;overflow:auto"></pre>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  STATE  (session-local counters only)
+// ══════════════════════════════════════════════════════
+const state = {
+  empType:        'Full-time',
+  sessionMatches: 0,
+  sessionQueries: 0,
+  cvCache:        [],   // cached from last /admin/resumes fetch
+};
+
+// ══════════════════════════════════════════════════════
+//  VIEW ROUTING
+// ══════════════════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'view-admin') {
+    const email = sessionStorage.getItem('admin_email') || '—';
+    document.getElementById('admin-email-display').textContent = email;
+    loadDashboard();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  EMPLOYMENT TYPE TOGGLE
+// ══════════════════════════════════════════════════════
+function selectEmpType(el) {
+  state.empType = el.dataset.type;
+  document.querySelectorAll('#emp-type-group span').forEach(s => {
+    s.className = s === el ? 'badge badge-blue' : 'badge badge-gray';
+    s.style.cursor = 'pointer';
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  AUTH  ── calls /login  /logout
+// ══════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-password').value;
+  let valid   = true;
+
+  ['login-email','login-password'].forEach(id => {
+    document.getElementById(id).classList.remove('error');
+    document.getElementById('err-' + id).classList.remove('show');
+  });
+  document.getElementById('login-error').classList.add('hidden');
+
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
+    document.getElementById('login-email').classList.add('error');
+    document.getElementById('err-login-email').classList.add('show');
+    valid = false;
+  }
+  if (!pw) {
+    document.getElementById('login-password').classList.add('error');
+    document.getElementById('err-login-password').classList.add('show');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+
+  try {
+    const res  = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      sessionStorage.setItem('admin_email', email);
+      showView('view-admin');
+    } else {
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = data.error || 'Invalid credentials.';
+      errEl.classList.remove('hidden');
+    }
+  } catch (e) {
+    document.getElementById('login-error').textContent = 'Network error. Is the Flask server running?';
+    document.getElementById('login-error').classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In to Dashboard';
+  }
+}
+
+async function doLogout() {
+  await fetch('/logout', { method: 'POST' });
+  sessionStorage.clear();
+  showView('view-public');
+  showToast('Signed out successfully');
+}
+
+function togglePw() {
+  const pw = document.getElementById('login-password');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN TABS
+// ══════════════════════════════════════════════════════
+function showAdminTab(tabId) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(tabId).classList.remove('hidden');
+  const idx = { 'tab-overview': 0, 'tab-upload': 1, 'tab-cvs': 2 };
+  document.querySelectorAll('.sidebar-link')[idx[tabId]]?.classList.add('active');
+  if (tabId === 'tab-cvs')    loadCVTable();
+  if (tabId === 'tab-overview') loadDashboard();
+}
+
+// ══════════════════════════════════════════════════════
+//  DASHBOARD  ── calls /admin/dashboard + /admin/resumes
+// ══════════════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const [statsRes, resumesRes] = await Promise.all([
+      fetch('/admin/dashboard'),
+      fetch('/admin/resumes'),
+    ]);
+    if (statsRes.status === 302 || statsRes.redirected) {
+      showView('view-login'); return;
+    }
+    const stats   = await statsRes.json();
+    const resumes = await resumesRes.json();
+    state.cvCache = resumes;
+
+    document.getElementById('dash-total-cvs').textContent = stats.total_resumes;
+    document.getElementById('dash-fields').textContent    = stats.fields_covered || '—';
+    document.getElementById('dash-matches').textContent   = state.sessionMatches;
+    document.getElementById('dash-recruiters').textContent = state.sessionQueries;
+    document.getElementById('cv-pool-count').textContent  = resumes.length;
+
+    // Recent uploads
+    const el = document.getElementById('recent-uploads-list');
+    if (!resumes.length) {
+      el.innerHTML = '<p class="text-sm text-center py-8" style="color:var(--slate-light)">No CVs uploaded yet. <button onclick="showAdminTab(\'tab-upload\')" class="underline" style="color:var(--royal-light)">Upload the first CV →</button></p>';
+    } else {
+      el.innerHTML = '<div class="space-y-3">' + resumes.slice(0, 5).map(cv => `
+        <div class="flex items-center justify-between py-2 border-b last:border-0" style="border-color:var(--border)">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:var(--royal-light)">${cv.anonymous_id[5] || '?'}</div>
+            <div>
+              <div class="text-sm font-mono font-semibold" style="color:var(--royal-dark)">${cv.anonymous_id}</div>
+              <div class="text-xs" style="color:var(--slate-light)">${cv.specialization}</div>
+            </div>
+          </div>
+          <span class="text-xs" style="color:var(--slate-light)">${cv.upload_timestamp}</span>
+        </div>
+      `).join('') + '</div>';
+    }
+  } catch (e) {
+    console.error('Dashboard load error', e);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  CV TABLE  ── calls /admin/resumes
+// ══════════════════════════════════════════════════════
+async function loadCVTable() {
+  const tbody = document.getElementById('cv-table-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-sm" style="color:var(--slate-light)">Loading…</td></tr>';
+
+  try {
+    const res     = await fetch('/admin/resumes');
+    const resumes = await res.json();
+    state.cvCache = resumes;
+
+    document.getElementById('cv-pool-count').textContent = resumes.length;
+
+    if (!resumes.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-10 text-sm" style="color:var(--slate-light)">No CVs in pool yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = resumes.map((cv, i) => `
+      <tr>
+        <td class="font-mono text-xs" style="color:var(--slate-light)">${i + 1}</td>
+        <td><span class="font-mono font-semibold text-sm" style="color:var(--royal-dark)">${cv.anonymous_id}</span></td>
+        <td><span class="badge badge-blue">${cv.specialization.split(' ')[0]}…</span></td>
+        <td class="text-sm">${cv.graduation_year}</td>
+        <td class="text-xs" style="color:var(--slate-light)">${cv.upload_timestamp}</td>
+        <td>
+          <div class="flex gap-2">
+            <button onclick="viewCV(${cv.id})" class="btn-outline" style="padding:5px 12px;font-size:12px">View</button>
+            <button onclick="deleteCV(${cv.id})" class="btn-ghost" style="color:#C53030;font-size:12px;padding:5px 10px">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-sm" style="color:#C53030">Error loading CVs. Is the server running?</td></tr>';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  UPLOAD CV  ── calls POST /admin/upload
+// ══════════════════════════════════════════════════════
+function handleFileRead(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.txt')) {
+    showToast('ℹ For PDF/DOCX, please paste the text manually in the field below.');
+    document.getElementById('file-name-display').textContent = '⚠ Non-.txt files: paste content below manually.';
+    document.getElementById('file-name-display').classList.remove('hidden');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('cv-text').value = e.target.result;
+    document.getElementById('file-name-display').textContent = '✓ File loaded: ' + file.name;
+    document.getElementById('file-name-display').classList.remove('hidden');
+  };
+  reader.readAsText(file);
+}
+
+async function addCV() {
+  const name  = document.getElementById('cv-name').value.trim();
+  const field = document.getElementById('cv-field').value;
+  const year  = document.getElementById('cv-year').value;
+  const text  = document.getElementById('cv-text').value.trim();
+  let valid   = true;
+
+  ['cv-name','cv-field','cv-text'].forEach(id => {
+    document.getElementById(id).classList.remove('error');
+    document.getElementById('err-' + id).classList.remove('show');
+  });
+  document.getElementById('upload-api-error').classList.add('hidden');
+
+  if (!name)        { document.getElementById('cv-name').classList.add('error');  document.getElementById('err-cv-name').classList.add('show'); valid = false; }
+  if (!field)       { document.getElementById('cv-field').classList.add('error'); document.getElementById('err-cv-field').classList.add('show'); valid = false; }
+  if (text.length < 100) { document.getElementById('cv-text').classList.add('error'); document.getElementById('err-cv-text').classList.add('show'); valid = false; }
+  if (!valid) return;
+
+  const btn = document.getElementById('upload-btn');
+  btn.disabled = true; btn.textContent = 'Saving to database…';
+
+  try {
+    const res  = await fetch('/admin/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_name: name,
+        specialization: field,
+        graduation_year: year,
+        full_text: text,
+      }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast('✓ CV saved → ' + data.anonymous_id);
+      ['cv-name','cv-sid','cv-text'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cv-field').value = '';
+      document.getElementById('file-name-display').classList.add('hidden');
+      loadDashboard();
+      showAdminTab('tab-cvs');
+    } else {
+      const errEl = document.getElementById('upload-api-error');
+      errEl.textContent = data.error || 'Upload failed.';
+      errEl.classList.remove('hidden');
+    }
+  } catch (e) {
+    document.getElementById('upload-api-error').textContent = 'Network error — is Flask running?';
+    document.getElementById('upload-api-error').classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = '＋ Add CV to Graduate Pool';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  DELETE CV  ── calls DELETE /admin/delete/<id>
+// ══════════════════════════════════════════════════════
+async function deleteCV(id) {
+  if (!confirm('Remove this CV from the pool permanently?')) return;
+  try {
+    const res  = await fetch('/admin/delete/' + id, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) { showToast('CV removed'); loadCVTable(); loadDashboard(); }
+    else showToast('Delete failed: ' + (data.error || ''));
+  } catch (e) {
+    showToast('Network error during delete.');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  VIEW CV MODAL  ── uses cache from /admin/resumes
+// ══════════════════════════════════════════════════════
+async function viewCV(id) {
+  // Try cache first; if not found, re-fetch
+  let cv = state.cvCache.find(c => c.id === id);
+  if (!cv) {
+    const res = await fetch('/admin/resumes');
+    state.cvCache = await res.json();
+    cv = state.cvCache.find(c => c.id === id);
+  }
+  if (!cv) return;
+  document.getElementById('modal-anon-id').textContent = cv.anonymous_id;
+  document.getElementById('modal-meta').textContent    = cv.specialization + ' · ' + cv.graduation_year + ' · Uploaded ' + cv.upload_timestamp;
+  document.getElementById('modal-text').textContent    = cv.full_text;
+  document.getElementById('cv-modal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('cv-modal').classList.add('hidden'); }
+document.getElementById('cv-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// ══════════════════════════════════════════════════════
+//  GEMINI AI MATCHING  ── calls POST /match
+// ══════════════════════════════════════════════════════
+async function runMatching() {
+  const title  = document.getElementById('job-title').value.trim();
+  const field  = document.getElementById('job-field').value;
+  const skills = document.getElementById('job-skills').value.trim();
+  const desc   = document.getElementById('job-desc').value.trim();
+  let valid    = true;
+
+  ['job-title','job-field','job-skills','job-desc'].forEach(id => {
+    document.getElementById(id)?.classList.remove('error');
+  });
+  ['err-title','err-field','err-skills','err-desc'].forEach(id => {
+    document.getElementById(id)?.classList.remove('show');
+  });
+  document.getElementById('match-api-error').classList.add('hidden');
+
+  if (!title) { document.getElementById('job-title').classList.add('error'); document.getElementById('err-title').classList.add('show'); valid = false; }
+  if (!field) { document.getElementById('job-field').classList.add('error'); document.getElementById('err-field').classList.add('show'); valid = false; }
+  if (!skills){ document.getElementById('job-skills').classList.add('error'); document.getElementById('err-skills').classList.add('show'); valid = false; }
+  if (desc.length < 50) { document.getElementById('job-desc').classList.add('error'); document.getElementById('err-desc').classList.add('show'); valid = false; }
+  if (!valid) return;
+
+  const btn = document.getElementById('match-btn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing with Gemini…';
+  document.getElementById('match-loading').classList.remove('hidden');
+  document.getElementById('results-section').classList.add('hidden');
+  document.getElementById('cv-count').textContent = '…';
+
+  try {
+    const res  = await fetch('/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        job_title: title,
+        job_field: field,
+        emp_type:  state.empType,
+        skills,
+        job_desc:  desc,
+      }),
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      const errEl = document.getElementById('match-api-error');
+      errEl.textContent = data.error || 'Matching failed. Please try again.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    state.sessionMatches++;
+    state.sessionQueries++;
+
+    document.getElementById('cv-count').textContent    = data.pool_size;
+    document.getElementById('results-job-title').textContent = data.job_title;
+    document.getElementById('stat-pool').textContent   = data.pool_size;
+    document.getElementById('stat-count').textContent  = data.results.length;
+
+    const avg = data.results.length
+      ? Math.round(data.results.reduce((s, c) => s + c.matching_score, 0) / data.results.length)
+      : 0;
+    document.getElementById('stat-avg').textContent = avg;
+
+    renderResults(data.results);
+    document.getElementById('results-section').classList.remove('hidden');
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('✓ Gemini returned ' + data.results.length + ' matches for "' + data.job_title + '"');
+
+  } catch (e) {
+    const errEl = document.getElementById('match-api-error');
+    errEl.textContent = 'Network error — is the Flask server running on port 5000?';
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Find Matching Candidates';
+    document.getElementById('match-loading').classList.add('hidden');
+  }
+}
+
+function renderResults(candidates) {
+  const rankClass = ['rank-1','rank-2','rank-3','rank-other','rank-other','rank-other','rank-other','rank-other','rank-other','rank-other'];
+  const rankLabel = ['🥇 Best Match','🥈 2nd Place','🥉 3rd Place'];
+  const grid      = document.getElementById('results-grid');
+
+  grid.innerHTML = candidates.map((c, i) => {
+    const score      = c.matching_score;
+    const scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-mid' : 'score-low';
+    const rankLbl    = rankLabel[i] || ('# ' + (i + 1));
+    const badgeCls   = i === 0 ? 'badge-gold' : i < 3 ? 'badge-blue' : 'badge-gray';
+
+    return `
+      <div class="match-card ${rankClass[i] || 'rank-other'}">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="score-ring ${scoreClass}">${score}%</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="font-bold text-sm font-mono" style="color:var(--royal-dark)">${c.student_id}</span>
+              <span class="badge ${badgeCls}">${rankLbl}</span>
+            </div>
+            <div class="text-xs" style="color:var(--slate-light)">Rank #${c.rank} · Score ${score}/100</div>
+          </div>
+        </div>
+
+        <!-- Arabic reason -->
+        <div class="mb-4 p-3 rounded-lg" style="background:#FAFBFF;border:1px solid var(--border)">
+          <div class="text-xs font-semibold mb-1.5 tracking-wider" style="color:var(--slate-light)">AI JUSTIFICATION · تقييم الذكاء الاصطناعي</div>
+          <p class="arabic-reason">${c.reason}</p>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-1.5 rounded-full" style="background:var(--border)">
+              <div class="h-1.5 rounded-full" style="background:${score >= 80 ? 'var(--success)' : score >= 60 ? 'var(--royal-light)' : '#C05621'};width:${score}%;transition:width 1s ease"></div>
+            </div>
+            <span class="text-xs font-bold" style="color:${score >= 80 ? 'var(--success)' : 'var(--royal-light)'}">${score}%</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t" style="border-color:var(--border)">
+          <span class="badge ${score >= 80 ? 'badge-green' : 'badge-blue'}">${score >= 80 ? 'Strong Match' : score >= 60 ? 'Good Match' : 'Partial Match'}</span>
+          <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="showInsights('${c.student_id}', ${score})">
+            Full Insights →
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showInsights(id, score) {
+  showToast(`💡 ${id} · ${score}% match — full analytics panel available in the pro deployment.`);
+}
+
+// ══════════════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>
